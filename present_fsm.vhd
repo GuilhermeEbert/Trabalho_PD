@@ -6,7 +6,6 @@ entity present_fsm is
     port (
         clk   : in std_logic;
         reset : in std_logic;
-        start : in std_logic;
 
         round_count : in std_logic_vector(4 downto 0);
 
@@ -24,7 +23,6 @@ entity present_fsm is
     );
 end entity present_fsm;
 
-
 architecture rtl of present_fsm is
 
     type state_type is (
@@ -41,151 +39,100 @@ architecture rtl of present_fsm is
 
 begin
 
-    -- REGISTRADOR DE ESTADOS
+    -- Registrador de estados sincrono
     process(clk)
     begin
         if rising_edge(clk) then
-
             if reset = '1' then
                 current_state <= IDLE;
-
             else
                 current_state <= next_state;
-
             end if;
-
         end if;
     end process;
 
-
-    -- LOGICA DE TRANSICAO DE ESTADOS
-    process(current_state, start, round_count)
+    -- Logica de proximo estado
+    process(current_state, reset, round_count)
     begin
-
         next_state <= current_state;
 
         case current_state is
-
             when IDLE =>
-
-                if start = '1' then
+                if reset = '0' then
                     next_state <= LOAD;
                 end if;
 
-
             when LOAD =>
-
                 next_state <= ROUND;
 
-
             when ROUND =>
-
                 next_state <= UPDATE;
 
-
             when UPDATE =>
-
-                if round_count = "11110" then
+                -- Apos atualizar da rodada 30 para a 31 (round_count = "11111"), vai para FINAL
+                if round_count = "11111" then
                     next_state <= FINAL;
                 else
                     next_state <= ROUND;
                 end if;
 
-
             when FINAL =>
-
                 next_state <= FINISHED;
 
-
             when FINISHED =>
-
-                if start = '0' then
+                if reset = '1' then
                     next_state <= IDLE;
                 end if;
-
-
         end case;
-
     end process;
 
-
-    -- LOGICA DE SAIDA
+    -- Logica de saidas de controle
     process(current_state)
     begin
-
-        -- Valores padrao
         state_load         <= '0';
         state_write_enable <= '0';
-
-        key_enable     <= '0';
-        counter_enable <= '0';
-        counter_reset  <= '0';
-
-        finalize <= '0';
-        done     <= '0';
+        key_enable         <= '0';
+        counter_enable     <= '0';
+        counter_reset      <= '0';
+        finalize           <= '0';
+        done               <= '0';
 
         case current_state is
-
             when IDLE =>
-
                 null;
-
 
             when LOAD =>
-
                 state_load         <= '1';
                 state_write_enable <= '1';
-
-                key_enable    <= '1';
-                counter_reset <= '1';
-
+                key_enable         <= '1';
+                counter_reset      <= '1';
 
             when ROUND =>
-
                 null;
 
-
             when UPDATE =>
-
                 state_write_enable <= '1';
-
-                key_enable     <= '1';
-                counter_enable <= '1';
-
+                key_enable         <= '1';
+                counter_enable     <= '1';
 
             when FINAL =>
-
                 finalize <= '1';
 
-
             when FINISHED =>
-
                 done <= '1';
-
         end case;
-
     end process;
 
-
-    -- CONTROLE DO NUMERO DA RODADA DO KEY SCHEDULE
+    -- Indice da rodada (1 a 31) usado na atualizacao do key schedule
     process(current_state, round_count)
     begin
-
         key_round_counter <= round_count;
 
         if current_state = LOAD then
-
             key_round_counter <= "00000";
-
         elsif current_state = UPDATE then
-
-            key_round_counter <= std_logic_vector(
-                unsigned(round_count) + 1
-            );
-
+            key_round_counter <= std_logic_vector(unsigned(round_count) + 1);
         end if;
-
     end process;
 
 end architecture rtl;
-

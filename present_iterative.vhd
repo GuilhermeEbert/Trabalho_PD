@@ -6,7 +6,6 @@ entity present_iterative is
     port (
         clk         : in std_logic;
         reset       : in std_logic;
-        start       : in std_logic;
 
         plaintext   : in std_logic_vector(63 downto 0);
         key_initial : in std_logic_vector(79 downto 0);
@@ -27,7 +26,6 @@ architecture structural of present_iterative is
         port (
             clk   : in std_logic;
             reset : in std_logic;
-            start : in std_logic;
 
             round_count : in std_logic_vector(4 downto 0);
 
@@ -132,7 +130,6 @@ begin
         port map (
             clk => clk,
             reset => reset,
-            start => start,
 
             round_count => round_count,
 
