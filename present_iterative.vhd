@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 
 entity present_iterative is
     port (
-        clk         : in std_logic;
+        clk_itrv    : in std_logic;
         reset       : in std_logic;
 
         plaintext   : in std_logic_vector(63 downto 0);
@@ -128,7 +128,7 @@ begin
 
     controller : present_fsm
         port map (
-            clk => clk,
+            clk => clk_itrv,
             reset => reset,
 
             round_count => round_count,
@@ -155,7 +155,7 @@ begin
 
     counter : present_counter
         port map (
-            clk => clk,
+            clk => clk_itrv,
             reset => counter_reset_total,
             enable => counter_enable,
 
@@ -170,7 +170,7 @@ begin
 
     key_generator : present_key_schedule
         port map (
-            clk => clk,
+            clk => clk_itrv,
             reset => reset,
             enable => key_enable,
 
@@ -197,7 +197,7 @@ begin
 
     state_register : present_state_register
         port map (
-            clk => clk,
+            clk => clk_itrv,
             reset => reset,
             enable => state_write_enable,
 
